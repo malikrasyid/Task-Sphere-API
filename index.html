@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager</title>
+    <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.css" rel="stylesheet" />
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 text-gray-800">
+    <div class="container mx-auto p-6">
+        <h1 class="text-3xl font-bold mb-6 text-center">Task Manager</h1>
+        <div id="calendar" class="mb-6"></div>
+        <div id="taskList" class="mb-6">
+            <h2 class="text-2xl font-semibold mb-4">Task List</h2>
+            <div id="tasksContainer" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"></div>
+        </div>
+        <div id="addTask" class="mt-4">
+            <button id="toggleFormButton" 
+                class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600">
+                Add a Task
+            </button>
+            <div id="taskFormContainer" style="display: none;" class="mt-4 p-4 border rounded bg-gray-100 w-1/2">
+                <form id="taskForm" class="space-y-4">
+                    <div class="flex-1">
+                        <label for="taskName" class="block text-gray-700 mb-1">Task Name:</label>
+                        <input
+                            type="text" 
+                            id="taskName" 
+                            class="border rounded w-full p-2" 
+                            placeholder="Maximum 20 words"
+                            required 
+                        />
+                    </div>
+                    <div class="flex-1">
+                        <label for="taskDeliverable" class="block text-gray-700 mb-1">Deliverable:</label>
+                        <textarea 
+                            id="taskDeliverable" 
+                            class="border rounded w-full p-2 h-24" 
+                            placeholder="Maximum 50 words"
+                            required
+                        ></textarea>
+                    </div>
+                    <div class="flex space-x-4">
+                        <div class="flex-1">
+                            <label for="taskStartDate" class="block text-gray-700 mb-1">Start Date:</label>
+                            <input type="datetime-local" id="taskStartDate" class="border rounded w-full p-2" required />
+                        </div>
+                        <div class="flex-1">
+                            <label for="taskEndDate" class="block text-gray-700 mb-1">End Date:</label>
+                            <input type="datetime-local" id="taskEndDate" class="border rounded w-full p-2" required />
+                        </div>
+                    </div>
+                    <div class="flex justify-end">
+                        <button type="submit" 
+                            class="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600">
+                            Add Task
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.1/main.min.js"></script>
+    <script>
+        const vscode = acquireVsCodeApi();
+
+        const toggleFormButton = document.getElementById('toggleFormButton');
+        const taskFormContainer = document.getElementById('taskFormContainer');
+
+        toggleFormButton.addEventListener('click', () => {
+            const isVisible = taskFormContainer.style.display === 'block';
+            taskFormContainer.style.display = isVisible ? 'none' : 'block';
+
+            if (isVisible) {
+                toggleFormButton.textContent = 'Add a Task';
+                toggleFormButton.classList.remove('bg-red-500', 'hover:bg-red-600');
+                toggleFormButton.classList.add('bg-blue-500', 'hover:bg-blue-600');
+            } else {
+                toggleFormButton.textContent = 'Cancel';
+                toggleFormButton.classList.remove('bg-blue-500', 'hover:bg-blue-600');
+                toggleFormButton.classList.add('bg-red-500', 'hover:bg-red-600');
+            }
+        });
+
+        document.getElementById('taskForm').addEventListener('submit', (event) => {
+            event.preventDefault();
+
+            const name = document.getElementById('taskName').value;
+            const deliverable = document.getElementById('taskDeliverable').value;
+            const startDate = document.getElementById('taskStartDate').value;
+            const endDate = document.getElementById('taskEndDate').value;
+
+            addTask(name, deliverable, startDate, endDate);
+
+            event.target.reset();
+        });
+
+        let tasks = [];
+
+        // Kirim permintaan untuk mendapatkan tasks
+        vscode.postMessage({ command: 'getTasks' });
+
+        // Menerima pesan dari extension.js
+        window.addEventListener('message', (event) => {
+            const message = event.data;
+
+            if (message.command === 'loadTasks') {
+                tasks = message.tasks;
+                renderTasks();
+            }
+        });
+
+        // Render tasks ke Calendar dan Gantt Chart
+        function renderTasks() {
+            updateTaskStatus();
+            renderCalendar(tasks);
+            renderTaskList();
+        }
+
+        function renderCalendar(tasks) {
+            const calendarEl = document.getElementById('calendar');
+
+            const calendar = new FullCalendar.Calendar(calendarEl, {
+                initialView: 'dayGridMonth',
+                events: tasks.map((task, index) => ({
+                    id: index,
+                    title: task.name,
+                    start: task.startDate,
+                    end: task.endDate,
+                    description: `Deliverable: ${task.deliverable}`,
+                })),
+                eventClick: function (info) {                       
+                    console.log('Event Clicked:', info.event.title);
+
+                    const taskIndex = parseInt(info.event.id);
+                    console.log('Task Index:', taskIndex);
+
+                    const confirmAction = confirm(
+                        `Task: ${tasks[taskIndex].name}\n` +
+                        `Deliverable: ${tasks[taskIndex].deliverable}\n\n` +
+                        `Choose an action:\n` +
+                        `1. Mark as Done\n` +
+                        `2. Delete Task\n\n` +
+                        `Click OK for Mark as Done, Cancel for Delete.`
+                    );
+
+                    if (confirmAction) {
+                        // Mark as Done
+                        markAsDone(taskIndex);
+                    } else {
+                        // Delete Task
+                        const deleteConfirm = confirm('Are you sure you want to delete this task?');
+                        if (deleteConfirm) {
+                            deleteTask(taskIndex);
+                        }
+                    }
+
+                    // Refresh Calendar Events
+                    calendar.refetchEvents();
+                }
+            });
+
+            calendar.render();
+        }
+
+        function renderTaskList() {
+            const tasksContainer = document.getElementById('tasksContainer');
+            tasksContainer.innerHTML = ''; // Clear previous content
+
+            tasks.forEach((task, index) => {
+                const taskDiv = document.createElement('div');
+                taskDiv.className = 'task border rounded p-4 bg-white shadow hover:shadow-lg cursor-pointer';
+
+                // Task information
+                taskDiv.innerHTML = `
+                    <strong>${task.name}</strong> (${task.status})<br>
+                    Deliverable: ${task.deliverable}<br>
+                    Start: ${formatDateWithTime(task.startDate)}<br> 
+                    End: ${formatDateWithTime(task.endDate)}
+                `;
+
+                const buttonsDiv = document.createElement('div');
+                buttonsDiv.className = 'hidden mt-2 space-x-2';
+
+                const doneButton = document.createElement('button');
+                doneButton.textContent = 'Mark as Done';
+                doneButton.className = 'px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600';
+                doneButton.disabled = task.status === 'Done'; // Disable jika sudah selesai
+                doneButton.addEventListener('click', () => {
+                    markAsDone(index);
+                });
+
+                const deleteButton = document.createElement('button');
+                deleteButton.textContent = 'Delete';
+                deleteButton.className = 'px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600';
+                deleteButton.addEventListener('click', () => {
+                    deleteTask(index);
+                });
+
+                buttonsDiv.appendChild(doneButton);
+                buttonsDiv.appendChild(deleteButton);
+                taskDiv.appendChild(buttonsDiv);
+
+                taskDiv.addEventListener('click', () => {
+                    const isVisible = buttonsDiv.classList.contains('hidden');
+                    buttonsDiv.classList.toggle('hidden', !isVisible);
+                });
+
+                tasksContainer.appendChild(taskDiv);
+            });
+        }
+
+        function updateTaskStatus() {
+            const today = new Date();
+            
+            tasks.forEach(task => {
+                // Cek jika task belum dimulai
+                if (task.status === 'Not Started' && new Date(task.startDate) <= today) {
+                    task.status = 'Ongoing'; // Jika sudah melewati Start Date
+                }
+
+                // Cek jika task melebihi End Date dan belum selesai
+                if (task.status === 'Ongoing' && new Date(task.endDate) < today) {
+                    task.status = 'Overdue'; // Jika sudah melewati End Date
+                }
+            });
+        }
+
+        function formatDateWithTime(dateString) {
+            const date = new Date(dateString);
+
+            const dateOptions = { year: 'numeric', month: 'short', day: 'numeric' };
+            const timeOptions = { hour: '2-digit', minute: '2-digit', second: '2-digit' };
+
+            const formattedDate = date.toLocaleDateString(undefined, dateOptions); // Menampilkan tanggal sesuai lokal
+            const formattedTime = date.toLocaleTimeString(undefined, timeOptions); // Menampilkan waktu sesuai lokal
+
+            return `${formattedDate} ${formattedTime}`;
+        }
+
+        function addTask(name, deliverable, startDate, endDate, status = 'Not Started') {
+            const newTask = {
+                name,
+                deliverable,
+                startDate: new Date(startDate).toISOString(),
+                endDate: new Date(endDate).toISOString(),
+                status
+            };
+
+            tasks.push(newTask);
+            renderTasks();
+
+            // Kirim update ke extension.js
+            vscode.postMessage({ command: 'updateTasks', tasks });
+        }
+
+        function deleteTask(index) {
+            tasks.splice(index, 1);
+            renderTasks();
+
+            vscode.postMessage({ command: 'updateTasks', tasks });
+        }
+
+        function markAsDone(index) {
+            tasks[index].status = 'Done';
+            renderTasks();
+
+            vscode.postMessage({ command: 'updateTasks', tasks });
+        }
+    </script>
+</body>
+</html>

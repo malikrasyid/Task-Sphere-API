@@ -10,14 +10,14 @@
     "Other"
   ],
   "activationEvents": [
-    "onCommand:extension.manageTasks"
+    "onCommand:extension.taskManager"
   ],
   "main": "./extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "extension.manageTasks",
-        "title": "Manage Tasks"
+        "command": "extension.taskManager",
+        "title": "Task Manager"
   }
     ]
   },
