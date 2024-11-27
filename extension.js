@@ -6,43 +6,43 @@ let tasks = [
     {
         name: "Complete Project Proposal",
         deliverable: "Proposal Document",
-        startDate: "2024-11-26",
-        endDate: "2024-11-30",
+        startDate: "2024-11-26T09:00:00",
+        endDate: "2024-11-30T17:00:00",
         status: "Ongoing"
     },
     {
         name: "Team Meeting",
         deliverable: "Meeting Notes",
-        startDate: "2024-11-27",
-        endDate: "2024-11-27",
+        startDate: "2024-11-27T14:00:00",
+        endDate: "2024-11-27T15:30:00",
         status: "Done"
     },
     {
         name: "Develop Backend API",
         deliverable: "API Endpoints",
-        startDate: "2024-12-01",
-        endDate: "2024-12-10",
+        startDate: "2024-12-01T08:00:00",
+        endDate: "2024-12-10T18:00:00",
         status: "Ongoing"
     },
     {
         name: "UI Design Review",
         deliverable: "Updated Wireframes",
-        startDate: "2024-12-05",
-        endDate: "2024-12-06",
+        startDate: "2024-12-05T10:00:00",
+        endDate: "2024-12-06T12:00:00",
         status: "Not Started"
     },
     {
         name: "Code Testing",
         deliverable: "Test Cases Report",
-        startDate: "2024-12-07",
-        endDate: "2024-12-09",
+        startDate: "2024-12-07T09:00:00",
+        endDate: "2024-12-09T17:00:00",
         status: "Not Started"
     },
     {
         name: "Final Deployment",
         deliverable: "Live Application",
-        startDate: "2024-12-15",
-        endDate: "2024-12-16",
+        startDate: "2024-12-15T13:00:00",
+        endDate: "2024-12-16T15:00:00",
         status: "Not Started"
     }
 ];
