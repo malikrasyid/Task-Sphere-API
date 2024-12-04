@@ -9,7 +9,7 @@
 </head>
 <body class="bg-gray-100 text-gray-800">
     <div class="container mx-auto p-6">
-        <h1 class="text-3xl font-bold mb-6 text-center">Task Manager</h1>
+        <h1 class="text-3xl font-bold mb-6">Task Manager</h1>
         <div id="calendar" class="mb-6">
         </div>
         <div id="taskList" class="mb-6">
@@ -124,6 +124,12 @@
 
             const calendar = new FullCalendar.Calendar(calendarEl, {
                 initialView: 'dayGridMonth',
+                headerToolbar: {
+                    left: 'prev,next today',
+                    center: 'title',
+                    right: 'dayGridMonth,timeGridWeek,timeGridDay'
+                },
+
                 events: tasks.map((task, index) => ({
                     id: index,
                     title: task.name,
@@ -158,7 +164,7 @@
                     const title = arg.event.title; // Mengambil nama tugas
 
                     return {
-                        html: `<span>${time} - ${title}</span>` // Format waktu dan judul
+                        html: `<span>${time} | ${title}</span>` // Format waktu dan judul
                     };
                 },
             });
@@ -174,9 +180,28 @@
                 const taskDiv = document.createElement('div');
                 taskDiv.className = 'task border rounded p-4 bg-white shadow hover:shadow-lg cursor-pointer';
 
-                // Task information
+                // Tambahkan kelas warna teks berdasarkan status
+                let textColorClass = '';
+                switch (task.status) {
+                    case 'Done':
+                        textColorClass = 'text-green-500';
+                        break;
+                    case 'Ongoing':
+                        textColorClass = 'text-blue-500';
+                        break;
+                    case 'Overdue':
+                        textColorClass = 'text-red-500';
+                        break;
+                    case 'Not Started':
+                        textColorClass = 'text-gray-500';
+                        break;
+                    default:
+                        textColorClass = 'text-gray-400';
+                }
+
+                // Task information dengan warna teks
                 taskDiv.innerHTML = `
-                    <strong>${task.name}</strong> (${task.status})<br>
+                    <strong>${task.name}</strong> <strong class="${textColorClass}">${task.status}</strong><br>
                     Deliverable: ${task.deliverable}<br>
                     Start: ${formatDateWithTime(task.startDate)}<br> 
                     End: ${formatDateWithTime(task.endDate)}

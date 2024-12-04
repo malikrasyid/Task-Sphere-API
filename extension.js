@@ -52,6 +52,11 @@ let tasks = [
  * @param {vscode.ExtensionContext} context 
  */
 function activate(context) {
+
+    loadTasks(context);
+
+
+    
     context.subscriptions.push(
         vscode.commands.registerCommand('extension.taskManager', () => {
             // Membuat panel Webview
@@ -80,6 +85,7 @@ function activate(context) {
                         case 'updateTasks':
                             // Perbarui daftar tugas dari Webview
                             tasks = message.tasks;
+                            saveTasks(context);
                             vscode.window.showInformationMessage('Tasks updated successfully!');
                             break;
                         case 'logMessage':
@@ -90,8 +96,72 @@ function activate(context) {
                 undefined,
                 context.subscriptions
             );
+            
         })
     );
+    setInterval(() => {
+        const now = new Date();
+        if (now.getHours() === 8 && now.getMinutes() === 0) {
+            sendDailyNotification();
+        }
+    }, 60 * 1000);
+    
+    setInterval(checkUpcomingDeadlines, 5 * 60 * 1000);
+    
+    setInterval(updateTaskStatus, 60 * 1000);
+}
+
+function sendDailyNotification() {
+    const ongoingTasks = tasks.filter(task => task.status === 'Ongoing');
+
+    if (ongoingTasks.length > 0) {
+        const taskNames = ongoingTasks.map(task => task.name).join(', ');
+         vscode.window.showInformationMessage(`Tugas yang sedang berjalan hari ini: ${taskNames}`);
+    }
+}
+
+function checkUpcomingDeadlines() {
+    const now = new Date();
+    const thirtyMinutesAhead = new Date(now.getTime() + 30 * 60 * 1000);
+
+    tasks.forEach(task => {
+        if (task.status === 'Ongoing') {
+            const endDate = new Date(task.endDate);
+            if (endDate > now && endDate <= thirtyMinutesAhead) {
+                 vscode.window.showInformationMessage(`Task "${task.name}" akan selesai dalam 30 menit!`);
+            }
+        }
+    });
+}
+
+function updateTaskStatus() {
+    const now = new Date();
+
+    tasks.forEach(task => {
+        const startDate = new Date(task.startDate);
+        const endDate = new Date(task.endDate);
+
+        if (task.status === 'Not Started' && startDate <= now) {
+            task.status = 'Ongoing';
+             vscode.window.showInformationMessage(`Task "${task.name}" sekarang sedang berjalan!`);
+        }
+
+        if (task.status === 'Ongoing' && endDate < now) {
+            task.status = 'Overdue';
+             vscode.window.showInformationMessage(`Task "${task.name}" telah melewati batas waktu!`);
+        }
+    });
+}
+
+function saveTasks(context) {
+    context.workspaceState.update('tasks', tasks);
+}
+
+function loadTasks(context) {
+    const savedTasks = context.workspaceState.get('tasks');
+    if (savedTasks) {
+        tasks = savedTasks;
+    }
 }
 
 function deactivate() {}
