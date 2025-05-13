@@ -1,5 +1,5 @@
-const API_BASE_URL = 'http://localhost:3000';
-const WS_URL = 'ws://localhost:8080';
+const BASE_URL = "https://task-sphere-pi.vercel.app";
+const WS_URL = "wss://websocket-task-sphere-production.up.railway.app";
 
 document.getElementById('mainSection').classList.add('hidden');
          
@@ -92,7 +92,7 @@ async function login() {
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}/login`, {
+        const response = await fetch(`${BASE_URL}/api/auth?route=login`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ email, password })
@@ -136,7 +136,7 @@ async function signUp() {
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}/signup`, {
+        const response = await fetch(`${BASE_URL}/api/auth?route=signup`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ firstName, lastName, email, password })
@@ -158,14 +158,6 @@ async function signUp() {
 }
 
  function logout() {
-    fetch(`${API_BASE_URL}/logout`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${sessionStorage.getItem("sessionToken")}`
-        }
-    }).catch(error => console.error("Logout API call failed:", error));
-
     if (websocket) {
         websocket.close();
     }
@@ -577,7 +569,7 @@ document.getElementById('addTaskForm').addEventListener('submit', async (e) => {
     };
 
     try {
-        const response = await fetch(`${API_BASE_URL}/projects/${projectId}/add-tasks`, {
+        const response = await fetch(`${BASE_URL}/api/projects/tasks?projectId=${projectId}`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
@@ -633,7 +625,8 @@ async function searchUsers(query) {
     }
 
     try {
-        const response = await fetch(`${API_BASE_URL}/search-users?query=${encodeURIComponent(query)}`, {
+        const response = await fetch(`${BASE_URL}/api/users/search?query=${encodeURIComponent(query)}`, {
+            method: 'GET',
             headers: {
                 'Authorization': `Bearer ${sessionStorage.getItem("sessionToken")}`
             }
@@ -674,7 +667,7 @@ function renderSearchResults(users) {
 
 async function markTaskAsDone(projectId, taskId) {
     try {
-        const response = await fetch(`${API_BASE_URL}/projects/${projectId}/update-task/${taskId}/status`, {
+        const response = await fetch(`${BASE_URL}/api/projects/tasks?projectId=${projectId}&&taskId=${taskId}`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -786,7 +779,7 @@ async function addMemberToProject() {
     const role = document.getElementById('memberRole').value;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/projects/${projectId}/add-member`, {
+        const response = await fetch(`${BASE_URL}/api/projects/member?projectId=${projectId}`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
@@ -829,7 +822,7 @@ async function deleteTask(projectId, taskId) {
     if (!confirm('Are you sure you want to delete this task?')) return;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/projects/${projectId}/delete-task/${taskId}`, {
+        const response = await fetch(`${BASE_URL}/api/projects/tasks?projectId=${projectId}&&taskId=${taskId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -855,7 +848,7 @@ async function deleteProject(projectId) {
     if (!confirm('Are you sure you want to delete this project?')) return;
 
     try {
-        const response = await fetch(`${API_BASE_URL}/projects/${projectId}`, {
+        const response = await fetch(`${BASE_URL}/api/projects?projectId${projectId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`
@@ -887,7 +880,8 @@ async function fetchUserProjects() {
     const token = sessionStorage.getItem("sessionToken"); // Simpan token login di sessionStorage saat login
     
     try {
-        const response = await fetch(`${API_BASE_URL}/user-projects`, {
+        const response = await fetch(`${BASE_URL}/api/projects`, {
+            method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -915,7 +909,7 @@ async function fetchProjectTasks(projectId) {
     const token = sessionStorage.getItem("sessionToken");
 
     try {
-        const response = await fetch(`${API_BASE_URL}/projects/${projectId}/tasks`, {
+        const response = await fetch(`${BASE_URL}/api/projects/tasks?projectId=${projectId}`, {
             headers: {
                 'Authorization': `Bearer ${token}`
             }
@@ -944,7 +938,7 @@ async function fetchTaskComments(projectId, taskId) {
     const token = sessionStorage.getItem("sessionToken");
 
     try {
-        const response = await fetch(`${API_BASE_URL}/projects/${projectId}/tasks/${taskId}/comments`, {
+        const response = await fetch(`${BASE_URL}/api/projects/tasks/comments?projectId=${projectId}&&taskId=${taskId}`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -976,7 +970,7 @@ async function addComment(projectId, taskId) {
     }
     
     try {
-        const response = await fetch(`${API_BASE_URL}/projects/${projectId}/tasks/${taskId}/comments`, {
+        const response = await fetch(`${BASE_URL}/api/projects/tasks/comments?projectId=${projectId}&&taskId=${taskId}`, {
             method: 'POST',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -1006,7 +1000,7 @@ async function deleteComment(projectId, taskId, commentId) {
     }
     
     try {
-        const response = await fetch(`${API_BASE_URL}/projects/${projectId}/tasks/${taskId}/comments/${commentId}`, {
+        const response = await fetch(`${BASE_URL}/api/projects/tasks/comments?projectId=${projectId}&&taskId=${taskId}&&commentId=${commentId}`, {
             method: 'DELETE',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -1018,7 +1012,7 @@ async function deleteComment(projectId, taskId, commentId) {
             throw new Error('Failed to delete comment');
         }
         
-        await renderProjectsAndTasks(); // Refresh the UI
+        await renderProjectsAndTasks();
         showToast('success', 'Comment deleted successfully');
     } catch (error) {
         console.error('Error deleting comment:', error);
@@ -1235,7 +1229,12 @@ async function renderProjectsAndTasks() {
 
 async function fetchUserById(userId) {
     try {
-        const res = await fetch(`${API_BASE_URL}/user/${userId}`);
+        const res = await fetch(`${BASE_URL}/api/user?action=name&userId=${userId}`, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            }
+        });
         if (!res.ok) throw new Error('User not found');
         const data = await res.json();
         return data.name || userId;
@@ -1249,12 +1248,7 @@ async function fetchNotifications() {
     const token = sessionStorage.getItem("sessionToken");
 
     try {      
-        // Add query parameter if filtering by read status
-        // if (filterRead !== null) {
-        //     url += `?read=${filterRead}`;
-        // }
-        
-        const response = await fetch(`${API_BASE_URL}/notifications`, {
+        const response = await fetch(`${BASE_URL}/api/notifications`, {
             method: 'GET',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -1279,7 +1273,7 @@ async function markNotificationAsRead(notificationId) {
     const token = sessionStorage.getItem("sessionToken");
 
     try {
-        const response = await fetch(`${API_BASE_URL}/notifications/${notificationId}/read`, {
+        const response = await fetch(`${BASE_URL}/api/notifications?notificationId=${notificationId}`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -1305,7 +1299,7 @@ async function markAllNotificationsAsRead() {
     const token = sessionStorage.getItem("sessionToken");
     
     try {
-        const response = await fetch('/notifications/mark-all-read', {
+        const response = await fetch(`${BASE_URL}/api/notifications`, {
             method: 'PUT',
             headers: {
                 'Authorization': `Bearer ${token}`,
@@ -1787,7 +1781,7 @@ document.getElementById('projectForm').addEventListener('submit', async (e) => {
     };
 
     try {
-        const response = await fetch(`${API_BASE_URL}/projects`, {
+        const response = await fetch(`${BASE_URL}/api/projects`, {
             method: 'POST',
             headers: { 
                 'Content-Type': 'application/json',
