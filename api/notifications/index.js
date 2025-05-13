@@ -1,5 +1,6 @@
-const { authenticateToken } = require('../../lib/auth');
-const { db } = require('../../lib/db');
+const { authenticateToken } = require('../../lib/users');
+const { markNotificationAsRead } = require('../../lib/notifications');
+const { db } = require('../../lib/utils');
 
 module.exports = async (req, res) => {
     try {
@@ -30,27 +31,39 @@ module.exports = async (req, res) => {
                 res.status(500).json({ error: error.message });
             }
         } else if (req.method === 'PUT' || req.method === 'PATCH') {
-            try {
-                const notificationsSnapshot = await db.collection('notifications')
-                    .where('userId', '==', userId)
-                    .where('read', '==', false)
-                    .get();
-                    
-                const batch = db.batch();
-                
-                notificationsSnapshot.docs.forEach(doc => {
-                    batch.update(doc.ref, { read: true });
-                });
-                
-                await batch.commit();
-                
-                res.status(200).json({ 
-                    message: 'All notifications marked as read',
-                    count: notificationsSnapshot.size
-                });
-            } catch (error) {
-                console.error('Error marking all notifications as read:', error);
-                res.status(500).json({ error: error.message });
+            const { notificationId } = req.query;
+
+            if (notificationId) {
+                // --- Mark a single notification as read ---
+                try {
+                await markNotificationAsRead(notificationId, userId);
+                return res.status(200).json({ message: 'Notification marked as read' });
+                } catch (error) {
+                console.error('Error updating notification:', error);
+                return res.status(400).json({ error: error.message });
+                }
+            } else {
+                // --- Mark all unread notifications as read ---
+                try {
+                    const snapshot = await db.collection('notifications')
+                        .where('userId', '==', userId)
+                        .where('read', '==', false)
+                        .get();
+
+                    const batch = db.batch();
+                    snapshot.docs.forEach(doc => {
+                        batch.update(doc.ref, { read: true });
+                    });
+                    await batch.commit();
+
+                    return res.status(200).json({ 
+                        message: 'All notifications marked as read',
+                        count: snapshot.size
+                    });
+                } catch (error) {
+                    console.error('Error marking all notifications as read:', error);
+                    return res.status(500).json({ error: error.message });
+                }
             }
         }
         else {
@@ -59,12 +72,9 @@ module.exports = async (req, res) => {
         }
     } catch (error) {
         console.error('Projects endpoint error:', error);
-        
-        // Handle authentication errors
         if (error.status) {
         return res.status(error.status).json({ error: error.message });
         }
-        
         return res.status(500).json({ error: error.message || 'Internal server error' });
     }
 }
