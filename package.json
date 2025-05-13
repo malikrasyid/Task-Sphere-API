@@ -1,67 +1,21 @@
 {
-  "name": "task-sphere",
-  "displayName": "Task Sphere",
-  "publisher": "MARTech",
-  "description": "Task Sphere is a VSCode extension designed to help you manage and track your tasks effectively, directly within the VSCode environment. Built using Agile methodology, Task Sphere offers seamless task management with intuitive features.",
-  "version": "0.0.1",
-  "engines": {
-    "vscode": "^1.95.0"
-  },
-  "categories": [
-    "Other"
-  ],
-  "activationEvents": [
-    "onCommand:extension.taskManager"
-  ],
-  "main": "./extension.js",
-  "contributes": {
-    "commands": [
-      {
-        "command": "extension.taskManager",
-        "title": "Task Manager"
-      }
-    ]
-  },
+  "name": "project-management-api",
+  "version": "1.0.0",
+  "description": "Project Management API for Vercel",
   "scripts": {
-    "lint": "eslint .",
-    "pretest": "npm run lint",
-    "test": "vscode-test",
-    "start": "node server.js"
-  },
-  "devDependencies": {
-    "@types/mocha": "^10.0.9",
-    "@types/node": "20.x",
-    "@types/vscode": "^1.95.0",
-    "@vscode/test-cli": "^0.0.10",
-    "@vscode/test-electron": "^2.4.1",
-    "eslint": "^9.13.0"
+    "dev": "vercel dev",
+    "deploy": "vercel deploy --prod"
   },
   "dependencies": {
-    "@tailwindcss/cli": "^4.0.6",
     "bcrypt": "^5.1.1",
-    "body-parser": "^1.20.3",
-    "cors": "^2.8.5",
-    "express": "^4.21.2",
-    "firebase": "^11.6.0",
-    "firebase-admin": "^13.0.2",
+    "firebase-admin": "^11.11.0",
     "jsonwebtoken": "^9.0.2",
-    "node-cron": "^3.0.3",
-    "tailwindcss": "^4.0.6",
-    "ws": "^8.18.1"
+    "uuid": "^9.0.1"
   },
-  "directories": {
-    "test": "test"
+  "devDependencies": {
+    "vercel": "^33.0.0"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/malikrasyid/pm.git"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
-  "bugs": {
-    "url": "https://github.com/malikrasyid/pm/issues"
-  },
-  "homepage": "https://github.com/malikrasyid/pm#readme"
+  "engines": {
+    "node": ">=18.0.0"
+  }
 }
