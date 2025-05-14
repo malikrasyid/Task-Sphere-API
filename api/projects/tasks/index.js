@@ -4,7 +4,8 @@ const {
   deleteTaskFromProject,
   updateTaskStatus
 } = require('../../../lib/projects');
-const { db, uuidv4, getAutoStatus } = require('../../../lib/utils');
+const { uuidv4, getAutoStatus } = require('../../../lib/utils');
+const { db } = require('../../../lib/db');
 
 module.exports = async (req, res) => {
   const { projectId, taskId } = req.query;

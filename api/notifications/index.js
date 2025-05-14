@@ -1,6 +1,6 @@
 const { authenticateToken } = require('../../lib/users');
 const { markNotificationAsRead } = require('../../lib/notifications');
-const { db } = require('../../lib/utils');
+const { db } = require('../../lib/db');
 
 module.exports = async (req, res) => {
     try {

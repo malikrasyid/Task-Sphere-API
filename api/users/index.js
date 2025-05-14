@@ -1,4 +1,4 @@
-const { db } = require('../../lib/utils');
+const { db } = require('../../lib/db');
 const { searchUsers } = require('../../lib/users')
 const { authenticateToken } = require('../../lib/users');
 

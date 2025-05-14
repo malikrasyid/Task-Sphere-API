@@ -1,6 +1,6 @@
 const { addCommentToTask, deleteComment } = require('../../../../lib/projects');
 const { authenticateToken } = require('../../../../lib/users');
-const { db } = require('../../../../lib/utils');
+const { db } = require('../../../../lib/db');
 
 module.exports = async (req, res) => {
   const { projectId, taskId, commentId } = req.query;

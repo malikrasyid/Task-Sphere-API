@@ -1,5 +1,5 @@
 const { authenticateToken } = require('../../lib/users');
-const { db } = require('../../lib/utils');
+const { db } = require('../../lib/db');
 const { createProject, deleteProject } = require('../../lib/projects');
 
 module.exports = async (req, res) => {

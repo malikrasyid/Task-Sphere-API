@@ -1,5 +1,5 @@
 // api/auth/login.js
-const { db, admin } = require('../../lib/utils');
+const { db, admin } = require('../../lib/db');
 const { comparePassword, generateToken, hashPassword } = require('../../lib/users');
 const { createUser } = require('../../lib/users');
 
