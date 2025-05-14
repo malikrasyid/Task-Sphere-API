@@ -1,8 +1,10 @@
+import cors from '../../lib/cors';
 const { authenticateToken } = require('../../lib/users');
 const { markNotificationAsRead } = require('../../lib/notifications');
 const { db } = require('../../lib/db');
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
+  await cors(req, res);
     try {
         const user = await authenticateToken(req, res);
         const userId = user.userId;

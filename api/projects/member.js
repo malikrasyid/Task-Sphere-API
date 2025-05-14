@@ -1,4 +1,5 @@
-// api/projects/[projectId]/member.js
+// api/projects/member.js
+import cors from '../../lib/cors';
 const { authenticateToken } = require('../../lib/users');
 const {
   addUserToProject,
@@ -6,7 +7,8 @@ const {
   updateMemberRole
 } = require('../../lib/projects');
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
+  await cors(req, res);
   const { projectId } = req.query;
 
   // Only allow POST method

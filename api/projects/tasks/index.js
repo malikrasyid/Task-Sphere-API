@@ -1,3 +1,4 @@
+import cors from '../../../lib/cors';
 const { authenticateToken } = require('../../../lib/users');
 const {
   addTaskToProject,
@@ -7,7 +8,8 @@ const {
 const { uuidv4, getAutoStatus } = require('../../../lib/utils');
 const { db } = require('../../../lib/db');
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
+  await cors(req, res);
   const { projectId, taskId } = req.query;
 
   try {

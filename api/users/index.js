@@ -1,8 +1,10 @@
+import cors from '../../lib/cors';
 const { db } = require('../../lib/db');
 const { searchUsers } = require('../../lib/users')
 const { authenticateToken } = require('../../lib/users');
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
+  await cors(req, res);
     try {
         if (req.method === 'GET') {
             await authenticateToken(req, res);

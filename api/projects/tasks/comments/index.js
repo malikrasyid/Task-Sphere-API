@@ -1,8 +1,10 @@
+import cors from '../../../../lib/cors';
 const { addCommentToTask, deleteComment } = require('../../../../lib/projects');
 const { authenticateToken } = require('../../../../lib/users');
 const { db } = require('../../../../lib/db');
 
-module.exports = async (req, res) => {
+export default async function handler(req, res) {
+  await cors(req, res);
   const { projectId, taskId, commentId } = req.query;
 
   try {

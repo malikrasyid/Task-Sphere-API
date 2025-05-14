@@ -1,9 +1,12 @@
 // api/auth/index.js
+import cors from '../../lib/cors';
 const { db, admin } = require('../../lib/db');
 const { comparePassword, generateToken, hashPassword } = require('../../lib/users');
 const { createUser } = require('../../lib/users');
 
 export default async function handler(req, res) {
+  await cors(req, res);
+  
   if (req.method === 'POST') {
     const { action, firstName, lastName, email, password } = req.body;
 
