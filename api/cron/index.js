@@ -4,15 +4,13 @@ const { updateAllTaskStatuses } = require('../../lib/projects');
 
 // Schedule this to run every 30 minutes (most frequent one)
 export const config = {
-  runtime: 'edge',
   schedule: '*/30 * * * *',
 };
 
-export default async function handler(req) {
+export default async function handler(req, res) {
   const now = new Date().toISOString();
   console.log(`[${now}] Running combined cron tasks...`);
 
-  const tasksToRun = [];
   const results = [];
   const nowDate = new Date();
 
@@ -47,10 +45,7 @@ export default async function handler(req) {
     }
   }
 
-  return new Response(JSON.stringify({ success: true, results }), {
-    status: 200,
-    headers: { 'Content-Type': 'application/json' }
-  });
+  return res.status(200).json({ success: true, results });
 }
 
 async function runNotifications() {
