@@ -11,7 +11,7 @@ export default async function handler(req, res) {
     const user = await authenticateToken(req, res);
     const userId = user.userId;
 
-    // -------- GET (Fetch all comments for a task) --------
+    // -------- GET (Fetch all comments for a task or a single comment) --------
     if (req.method === 'GET') {
       const projectRef = db.collection('projects').doc(projectId);
       const projectDoc = await projectRef.get();
@@ -32,6 +32,20 @@ export default async function handler(req, res) {
         return res.status(404).json({ error: 'Task not found' });
       }
 
+      // If commentId is provided, fetch a single comment
+      if (commentId) {
+        const commentRef = taskRef.collection('comments').doc(commentId);
+        const commentDoc = await commentRef.get();
+
+        if (!commentDoc.exists) {
+          return res.status(404).json({ error: 'Comment not found' });
+        }
+
+        const comment = commentDoc.data();
+        return res.status(200).json({ comment });
+      }
+
+      // Otherwise fetch all comments for the task
       const commentsSnapshot = await taskRef.collection('comments')
         .orderBy('timestamp', 'asc')
         .get();
