@@ -66,6 +66,32 @@ export default async function handler(req, res) {
       return res.status(200).json({ tasks });
     }
 
+    // -------- GET (Fetch Task From Tasks) --------
+    if (req.method === 'GET' && taskId) {
+      const projectRef = db.collection('projects').doc(projectId);
+      const projectDoc = await projectRef.get();
+
+      if (!projectDoc.exists) {
+        return res.status(404).json({ error: 'Project not found' });
+      }
+
+      const projectData = projectDoc.data();
+      if (!projectData.teamIds.includes(userId)) {
+        return res.status(403).json({ error: 'Access denied: not part of project team' });
+      }
+
+      const taskRef = projectRef.collection('tasks').doc(taskId);
+      const taskDoc = await taskRef.get();
+
+      if (!taskDoc.exists) {
+        return res.status(404).json({ error: 'Task not found' });
+      }
+
+      const task = taskDoc.data();
+
+      return res.status(200).json({ task });
+    }
+
     // -------- PUT/PATCH (Update Task Status) --------
     if ((req.method === 'PUT' || req.method === 'PATCH') && taskId) {
       const { status } = req.body;
