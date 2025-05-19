@@ -2,6 +2,7 @@ import cors from '../../lib/cors';
 const { authenticateToken } = require('../../lib/users');
 const { db } = require('../../lib/db');
 const { createProject, deleteProject } = require('../../lib/projects');
+const { uuidv4 } = require('../../lib/utils');
 
 export default async function handler(req, res) {
   await cors(req, res);
@@ -30,9 +31,11 @@ export default async function handler(req, res) {
         }
 
       } else if (req.method === 'POST') {
-        const { projectId: newId, name, description } = req.body;
+        const { name, description } = req.body;
+        const newProjectId = uuidv4();
+
         try {
-          await createProject(newId, name, description, userId);
+          await createProject(newProjectId, name, description, userId);
           return res.status(201).json({ message: 'Project created successfully' });
         } catch (error) {
           console.error('Error creating project:', error);
