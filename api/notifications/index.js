@@ -1,6 +1,6 @@
 import cors from '../../lib/cors';
 const { authenticateToken } = require('../../lib/users');
-const { markNotificationAsRead } = require('../../lib/notifications');
+const { markNotificationAsRead, createNotification } = require('../../lib/notifications');
 const { db } = require('../../lib/db');
 
 export default async function handler(req, res) {
@@ -31,6 +31,33 @@ export default async function handler(req, res) {
             } catch (error) {
                 console.error('Error fetching notifications:', error);
                 res.status(500).json({ error: error.message });
+            }
+        } else if (req.method === 'POST') {
+            const { projectId, taskId, title, body, type } = req.body;
+            
+            if (!projectId || !taskId || !title || !body) {
+                return res.status(400).json({ error: 'Missing required fields' });
+            }
+            
+            try {
+                const notification = await createNotification({
+                    userId,
+                    projectId,
+                    taskId,
+                    title,
+                    body,
+                    type: type || 'info',
+                    timestamp: new Date().toISOString(),
+                    read: false
+                });
+                
+                return res.status(201).json({ 
+                    message: 'Notification created successfully',
+                    notification
+                });
+            } catch (error) {
+                console.error('Error creating notification:', error);
+                return res.status(500).json({ error: error.message });
             }
         } else if (req.method === 'PUT' || req.method === 'PATCH') {
             const { notificationId } = req.query;
