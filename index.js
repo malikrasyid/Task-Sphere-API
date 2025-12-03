@@ -7,15 +7,13 @@ const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/users');
 const projectRoutes = require('./routes/projects');
 const notificationRoutes = require('./routes/notifications');
-const taskRoutes = require('./routes/tasks');
-const commentRoutes = require('./routes/comments');
 const errorHandler = require('./middleware/errorHandler');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // Get the primary production URL from environment variable
-const productionUrl = process.env.FRONTEND_URL; 
+const productionUrl = process.env.FRONTEND_URL;
 
 // List of allowed origins for development (e.g., common ports for React, Vue, Vite, etc.)
 const allowedLocalOrigins = [
