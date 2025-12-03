@@ -44,7 +44,7 @@ const corsOptions = {
 // ----------------------------------------------------
 // --- Middleware ---
 // ----------------------------------------------------
-app.use(cors()); // Global CORS enablement
+app.use(cors(corsOptions));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
