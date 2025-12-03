@@ -14,6 +14,33 @@ const errorHandler = require('./middleware/errorHandler');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// Get the primary production URL from environment variable
+const productionUrl = process.env.FRONTEND_URL; 
+
+// List of allowed origins for development (e.g., common ports for React, Vue, Vite, etc.)
+const allowedLocalOrigins = [
+  'http://localhost:5173'
+];
+
+const allowedOrigins = [productionUrl, ...allowedLocalOrigins].filter(Boolean);
+
+const corsOptions = {
+    origin: function (origin, callback) {
+        // Allow requests with no origin (like mobile apps or curl requests)
+        if (!origin) return callback(null, true); 
+        
+        // Check if the origin is in our allowed list
+        if (allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            // Reject all other origins
+            callback(new Error(`Not allowed by CORS policy for origin: ${origin}`));
+        }
+    },
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    credentials: true,
+};
+
 // ----------------------------------------------------
 // --- Middleware ---
 // ----------------------------------------------------
